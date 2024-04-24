@@ -1,5 +1,6 @@
 from collections import OrderedDict
 from ordered_set import OrderedSet
+import pandas as pd
 
 #to check for non_terminal symbols
 
@@ -93,8 +94,42 @@ def compute_follow(grammar, first):
                    
     return follow
 
+# ***************************************************************IMPLEMENTED LL(1) Parsing table********************************************************************
 
+def generate_parsing_table(grammar, first, follow):
+    non_terminals = list(grammar.keys())
+    terminals = {'$'}
+    for productions in grammar.values():
+        for production in productions:
+            for i in production:
+                if i not in non_terminals and i != '~':
+                    terminals.update(set(i))
+                    
+    print(terminals)
+            
 
+    parsing_table = pd.DataFrame(index=non_terminals , columns=terminals)
+
+    for non_terminal, productions in grammar.items():
+        for production in productions:
+            for i in production:
+                if(i in non_terminals):
+                    if '~' in first[i]: #checking condition if epsilon is present in first(alpha)
+                        for j in follow[non_terminal]: #if yes then using follow 
+                            parsing_table.at[non_terminal,j] = production
+                    else:
+                        for k in first[i]: #if no then using first
+                            parsing_table.at[non_terminal,k] = production 
+                    break
+                elif i == '~':
+                    for j in follow[non_terminal]:
+                            parsing_table.at[non_terminal,j] = production
+                          
+                else:
+                    parsing_table.at[non_terminal,i] = production
+                    
+
+    return parsing_table
 
 # Define your grammar here
 
@@ -130,3 +165,9 @@ follow = compute_follow(grammar, first)
 print("\nFOLLOW sets:")
 for non_terminal, follow_set in follow.items():
     print(non_terminal, ": ", set(follow_set))
+
+
+parsing_table = generate_parsing_table(grammar, first, follow)
+print("\nParsing Table:")
+print(parsing_table)
+
