@@ -4,6 +4,28 @@ import pandas as pd
 
 #to check for non_terminal symbols
 
+def parse_csv_to_grammar(csv_file):
+    grammar = {}
+
+    df = pd.read_csv(csv_file, header=None, delim_whitespace=True)
+    for index, row in df.items():
+        for production in row[0:]:
+            productions = []
+            non_terminal = production[0]
+            str = ""
+            for i in production[1:]:
+                if i == ',' or i == "":
+                    continue
+                else:
+                    str = str + i
+            if non_terminal in grammar.keys():
+                grammar[non_terminal].append(str)
+            else:
+                productions.append(str)
+                grammar[non_terminal] = productions
+
+    return grammar
+
 def non_terminalf(grammar): 
     lst = []
     for key , value in grammar.items():
@@ -139,10 +161,18 @@ def generate_parsing_table(grammar, first, follow):
     A --> 11
 """
 
-grammar = {
-    'S': ['A1S', '~'],
-    'A': ['01A', '11'],
-}
+csv_file = "grammar.csv"
+grammar = parse_csv_to_grammar(csv_file)
+
+print(grammar)
+
+
+# grammar = {
+#     'S': ['A1S', '~'],
+#     'A': ['01A', '11'],
+# }
+
+# print(grammar)
 
 # grammar = {
 #     'S': ['aBDh'],
